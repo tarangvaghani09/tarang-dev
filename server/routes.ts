@@ -40,12 +40,19 @@ export async function registerRoutes(
       setImmediate(() => {
         void (async () => {
           try {
-            await sendContactNotificationEmail({
+            const sendResult = await sendContactNotificationEmail({
               name: input.name,
               email: input.email,
               subject,
               message: input.message,
               submittedAt: new Date(),
+            });
+            await storage.updateMessageStatus(message.id, "sent");
+            console.log("Contact email sent", {
+              messageId: sendResult.messageId,
+              accepted: sendResult.accepted,
+              rejected: sendResult.rejected,
+              messageIdInDb: message.id,
             });
           } catch (emailError) {
             console.error("Failed to send email notification:", emailError);

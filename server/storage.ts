@@ -12,7 +12,7 @@ import {
 
 export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
-  updateMessageStatus(id: number, status: "sent" | "not_sent"): Promise<void>;
+  updateMessageStatus(id: number, status: "pending" | "sent" | "not_sent"): Promise<void>;
   normalizeUserPasswordHashes(): Promise<void>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: {
@@ -43,7 +43,10 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async createMessage(message: InsertMessage): Promise<Message> {
-    const [insertResult] = await db.insert(messages).values(message).$returningId();
+    const [insertResult] = await db
+      .insert(messages)
+      .values({ ...message, status: "pending" })
+      .$returningId();
     const insertedId = insertResult?.id;
     if (insertedId === undefined) {
       throw new Error("Failed to create message");
@@ -62,7 +65,7 @@ export class DatabaseStorage implements IStorage {
     return newMessage;
   }
 
-  async updateMessageStatus(id: number, status: "sent" | "not_sent"): Promise<void> {
+  async updateMessageStatus(id: number, status: "pending" | "sent" | "not_sent"): Promise<void> {
     await db
       .update(messages)
       .set({ status })
@@ -184,7 +187,13 @@ export class DatabaseStorage implements IStorage {
       filters.push(eq(messages.status, "sent"));
     }
     if (status === "not_sent") {
-      filters.push(or(eq(messages.status, "not_sent"), eq(messages.status, "failed")));
+      filters.push(
+        or(
+          eq(messages.status, "not_sent"),
+          eq(messages.status, "failed"),
+          eq(messages.status, "pending"),
+        ),
+      );
     }
 
     const whereClause = filters.length > 0 ? and(...filters) : undefined;
@@ -213,7 +222,7 @@ export class DatabaseStorage implements IStorage {
     const [statsRow] = await db
       .select({
         sent: sql<number>`coalesce(sum(case when ${messages.status} = 'sent' then 1 else 0 end), 0)`,
-        notSent: sql<number>`coalesce(sum(case when ${messages.status} in ('not_sent', 'failed') then 1 else 0 end), 0)`,
+        notSent: sql<number>`coalesce(sum(case when ${messages.status} in ('not_sent', 'failed', 'pending') then 1 else 0 end), 0)`,
       })
       .from(messages)
       .where(dateWhereClause);

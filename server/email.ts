@@ -37,9 +37,15 @@ export type ContactEmailPayload = {
   submittedAt: Date;
 };
 
+export type ContactEmailSendResult = {
+  messageId: string;
+  accepted: string[];
+  rejected: string[];
+};
+
 export async function sendContactNotificationEmail(
   payload: ContactEmailPayload,
-): Promise<void> {
+): Promise<ContactEmailSendResult> {
   const smtpConfig = getSmtpConfig();
   if (!smtpConfig) {
     throw new Error("SMTP configuration is missing or invalid");
@@ -82,7 +88,7 @@ export async function sendContactNotificationEmail(
     <p><strong>Submitted At:</strong> ${escapeHtml(submittedAtLocal)} (${escapeHtml(submittedAtIso)})</p>
   `;
 
-  await transporter.sendMail({
+  const result = await transporter.sendMail({
     from: `"Portfolio Contact" <${smtpConfig.user}>`,
     to: CONTACT_RECEIVER_EMAIL,
     replyTo: payload.email,
@@ -90,4 +96,10 @@ export async function sendContactNotificationEmail(
     text: textBody,
     html: htmlBody,
   });
+
+  return {
+    messageId: result.messageId,
+    accepted: (result.accepted ?? []).map(String),
+    rejected: (result.rejected ?? []).map(String),
+  };
 }
