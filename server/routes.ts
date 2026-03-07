@@ -34,21 +34,25 @@ export async function registerRoutes(
       const message = await storage.createMessage(input);
       const subject =
         typeof req.body?.subject === "string" ? req.body.subject : undefined;
-
-      try {
-        await sendContactNotificationEmail({
-          name: input.name,
-          email: input.email,
-          subject,
-          message: input.message,
-          submittedAt: new Date(),
-        });
-      } catch (emailError) {
-        console.error("Failed to send email notification:", emailError);
-        await storage.updateMessageStatus(message.id, "not_sent");
-      }
-
       res.status(201).json(message);
+
+      // Send email after responding so form submission stays fast.
+      setImmediate(() => {
+        void (async () => {
+          try {
+            await sendContactNotificationEmail({
+              name: input.name,
+              email: input.email,
+              subject,
+              message: input.message,
+              submittedAt: new Date(),
+            });
+          } catch (emailError) {
+            console.error("Failed to send email notification:", emailError);
+            await storage.updateMessageStatus(message.id, "not_sent");
+          }
+        })();
+      });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
