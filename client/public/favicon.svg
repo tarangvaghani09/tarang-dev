@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0.5" />
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+    </filter>
+  </defs>
+
+  <rect x="6" y="6" width="52" height="52" rx="12" fill="#060606" />
+  <rect x="10" y="10" width="44" height="44" rx="10" fill="url(#blueGlow)" filter="url(#softGlow)" opacity="0.35" />
+
+  <text
+    x="32"
+    y="41"
+    text-anchor="middle"
+    font-family="Inter, Arial, sans-serif"
+    font-size="34"
+    font-weight="700"
+    fill="#ffffff"
+  >
+    T
+  </text>
+</svg>
