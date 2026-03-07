@@ -7,7 +7,7 @@ export const messages = mysqlTable("messages", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   message: text("message").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("sent"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

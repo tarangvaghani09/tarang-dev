@@ -87,15 +87,13 @@ export function MessageTable({
                     <Badge className="bg-blue-600 text-white border-transparent">Saved</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      className={
-                        item.status === "failed" || item.status === "not_sent"
-                          ? "bg-red-600 text-white border-transparent"
-                          : "bg-emerald-600 text-white border-transparent"
-                      }
-                    >
-                      {item.status === "failed" || item.status === "not_sent" ? "Not Sent" : "Sent"}
-                    </Badge>
+                    {item.status === "failed" || item.status === "not_sent" ? (
+                      <Badge className="bg-red-600 text-white border-transparent">Not Sent</Badge>
+                    ) : item.status === "pending" ? (
+                      <Badge className="bg-amber-500 text-black border-transparent">Pending</Badge>
+                    ) : (
+                      <Badge className="bg-emerald-600 text-white border-transparent">Sent</Badge>
+                    )}
                   </TableCell>
                   <TableCell>{formatDate(item.createdAt)}</TableCell>
                 </TableRow>
