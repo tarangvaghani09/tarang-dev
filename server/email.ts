@@ -1,6 +1,18 @@
 import nodemailer from "nodemailer";
 
-const CONTACT_RECEIVER_EMAIL = "tarangvaghani@gmail.com";
+const DEFAULT_CONTACT_RECEIVER_EMAIL = "tarangvaghani@gmail.com";
+const SMTP_TIMEOUT_MS = 15000;
+const SMTP_RETRY_ATTEMPTS = 2;
+
+type SmtpConfig = {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+};
+
+let cachedTransporter: nodemailer.Transporter | null = null;
+let cachedTransporterKey: string | null = null;
 
 function getSmtpConfig() {
   const host = process.env.SMTP_HOST;
@@ -17,7 +29,50 @@ function getSmtpConfig() {
     return null;
   }
 
-  return { host, port, user, pass };
+  return { host, port, user, pass } satisfies SmtpConfig;
+}
+
+function getContactReceiverEmail(): string {
+  const value = process.env.CONTACT_RECEIVER_EMAIL?.trim();
+  return value || DEFAULT_CONTACT_RECEIVER_EMAIL;
+}
+
+function buildTransporter(config: SmtpConfig): nodemailer.Transporter {
+  return nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.port === 465,
+    auth: {
+      user: config.user,
+      pass: config.pass,
+    },
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 100,
+    connectionTimeout: SMTP_TIMEOUT_MS,
+    greetingTimeout: SMTP_TIMEOUT_MS,
+    socketTimeout: SMTP_TIMEOUT_MS,
+  });
+}
+
+function getTransporter(config: SmtpConfig): nodemailer.Transporter {
+  const nextKey = `${config.host}:${config.port}:${config.user}`;
+  if (cachedTransporter && cachedTransporterKey === nextKey) {
+    return cachedTransporter;
+  }
+
+  cachedTransporter = buildTransporter(config);
+  cachedTransporterKey = nextKey;
+  return cachedTransporter;
+}
+
+function isRetryableSmtpError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const code = "code" in error ? String(error.code) : "";
+  return code === "ETIMEDOUT" || code === "ECONNECTION";
 }
 
 function escapeHtml(value: string): string {
@@ -57,18 +112,7 @@ export async function testSmtpConnection(): Promise<SmtpTestResult> {
     throw new Error("SMTP configuration is missing or invalid");
   }
 
-  const transporter = nodemailer.createTransport({
-    host: smtpConfig.host,
-    port: smtpConfig.port,
-    secure: smtpConfig.port === 465,
-    auth: {
-      user: smtpConfig.user,
-      pass: smtpConfig.pass,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-  });
+  const transporter = getTransporter(smtpConfig);
 
   await transporter.verify();
 
@@ -89,15 +133,7 @@ export async function sendContactNotificationEmail(
     throw new Error("SMTP configuration is missing or invalid");
   }
 
-  const transporter = nodemailer.createTransport({
-    host: smtpConfig.host,
-    port: smtpConfig.port,
-    secure: smtpConfig.port === 465,
-    auth: {
-      user: smtpConfig.user,
-      pass: smtpConfig.pass,
-    },
-  });
+  const transporter = getTransporter(smtpConfig);
 
   const subjectValue = payload.subject?.trim() || "No subject provided";
   const submittedAtLocal = payload.submittedAt.toLocaleString();
@@ -126,18 +162,33 @@ export async function sendContactNotificationEmail(
     <p><strong>Submitted At:</strong> ${escapeHtml(submittedAtLocal)} (${escapeHtml(submittedAtIso)})</p>
   `;
 
-  const result = await transporter.sendMail({
+  const mailOptions = {
     from: `"Portfolio Contact" <${smtpConfig.user}>`,
-    to: CONTACT_RECEIVER_EMAIL,
+    to: getContactReceiverEmail(),
     replyTo: payload.email,
     subject: "New Contact Form Query",
     text: textBody,
     html: htmlBody,
-  });
-
-  return {
-    messageId: result.messageId,
-    accepted: (result.accepted ?? []).map(String),
-    rejected: (result.rejected ?? []).map(String),
   };
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= SMTP_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const result = await transporter.sendMail(mailOptions);
+      return {
+        messageId: result.messageId,
+        accepted: (result.accepted ?? []).map(String),
+        rejected: (result.rejected ?? []).map(String),
+      };
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableSmtpError(error) || attempt === SMTP_RETRY_ATTEMPTS) {
+        break;
+      }
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Failed to send contact notification email");
 }
