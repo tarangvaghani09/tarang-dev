@@ -24,7 +24,7 @@ export function ContactSection() {
     const slowRequestToastTimer = window.setTimeout(() => {
       toast({
         title: "Waking up server... grab a cup of coffee",
-        description: "First request on free hosting can take a little time.",
+        description: "Initial request may take a moment as the server starts.",
       });
     }, 3000);
 

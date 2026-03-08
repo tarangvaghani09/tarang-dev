@@ -61,7 +61,7 @@ export function HeroSection() {
               }
               className="px-8 py-4 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center gap-2"
             >
-              View Work <ArrowRight className="w-4 h-4" />
+              View Projects <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={() =>

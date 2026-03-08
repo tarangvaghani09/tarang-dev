@@ -8,11 +8,13 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const scrollAnimationRef = useRef<AnimationPlaybackControls | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   const scrollTo = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const navOffset = 90;
+      const navHeight = navRef.current?.offsetHeight ?? 72;
+      const navOffset = navHeight + 16;
       const targetY = Math.max(
         0,
         element.getBoundingClientRect().top + window.scrollY - navOffset,
@@ -62,6 +64,7 @@ export function Navbar() {
 
   return (
     <motion.nav 
+      ref={navRef}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: isNavbarVisible ? 0 : -100, opacity: 1 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -98,7 +101,7 @@ export function Navbar() {
             </nav>
           </SheetContent>
         </Sheet>
-        <span className="font-display font-bold text-xl tracking-wide">DEV.</span>
+        <span className="font-display font-bold text-xl tracking-wide">Tarang</span>
       </div>
 
       <div className="hidden md:flex items-center gap-8">
