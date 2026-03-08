@@ -1,35 +1,34 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
+// import nodemailer from "nodemailer";
 
 const DEFAULT_CONTACT_RECEIVER_EMAIL = "tarangvaghani@gmail.com";
-const SMTP_TIMEOUT_MS = 15000;
-const SMTP_RETRY_ATTEMPTS = 2;
+const BREVO_API_BASE_URL = "https://api.brevo.com/v3";
+const EMAIL_TIMEOUT_MS = 15000;
 
-type SmtpConfig = {
-  host: string;
-  port: number;
-  user: string;
-  pass: string;
+type BrevoConfig = {
+  apiKey: string;
+  toEmail: string;
+  fromEmail: string;
+  fromName: string;
 };
 
-let cachedTransporter: nodemailer.Transporter | null = null;
-let cachedTransporterKey: string | null = null;
-
-function getSmtpConfig() {
-  const host = process.env.SMTP_HOST;
-  const portRaw = process.env.SMTP_PORT;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !portRaw || !user || !pass) {
-    return null;
+function getBrevoConfig(): BrevoConfig {
+  const apiKey = process.env.BREVO_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("BREVO_API_KEY is missing");
   }
 
-  const port = Number(portRaw);
-  if (!Number.isFinite(port)) {
-    return null;
-  }
+  const toEmail =
+    process.env.CONTACT_RECEIVER_EMAIL?.trim() || DEFAULT_CONTACT_RECEIVER_EMAIL;
+  const fromEmail = process.env.CONTACT_FROM_EMAIL?.trim() || toEmail;
+  const fromName = process.env.CONTACT_FROM_NAME?.trim() || "Portfolio Contact";
 
-  return { host, port, user, pass } satisfies SmtpConfig;
+  return {
+    apiKey,
+    toEmail,
+    fromEmail,
+    fromName,
+  };
 }
 
 function getContactReceiverEmail(): string {
@@ -37,43 +36,26 @@ function getContactReceiverEmail(): string {
   return value || DEFAULT_CONTACT_RECEIVER_EMAIL;
 }
 
-function buildTransporter(config: SmtpConfig): nodemailer.Transporter {
-  return nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.port === 465,
-    auth: {
-      user: config.user,
-      pass: config.pass,
-    },
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 100,
-    connectionTimeout: SMTP_TIMEOUT_MS,
-    greetingTimeout: SMTP_TIMEOUT_MS,
-    socketTimeout: SMTP_TIMEOUT_MS,
+/*
+  SMTP fallback (kept for later switch-back):
+  ------------------------------------------------
+  import nodemailer from "nodemailer";
+
+  function getSmtpConfig() {
+    const host = process.env.SMTP_HOST;
+    const portRaw = process.env.SMTP_PORT;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    if (!host || !portRaw || !user || !pass) return null;
+    const port = Number(portRaw);
+    if (!Number.isFinite(port)) return null;
+    return { host, port, user, pass };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host, port, secure: port === 465, auth: { user, pass }
   });
-}
-
-function getTransporter(config: SmtpConfig): nodemailer.Transporter {
-  const nextKey = `${config.host}:${config.port}:${config.user}`;
-  if (cachedTransporter && cachedTransporterKey === nextKey) {
-    return cachedTransporter;
-  }
-
-  cachedTransporter = buildTransporter(config);
-  cachedTransporterKey = nextKey;
-  return cachedTransporter;
-}
-
-function isRetryableSmtpError(error: unknown): boolean {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  const code = "code" in error ? String(error.code) : "";
-  return code === "ETIMEDOUT" || code === "ECONNECTION";
-}
+*/
 
 function escapeHtml(value: string): string {
   return value
@@ -100,40 +82,32 @@ export type ContactEmailSendResult = {
 
 export type SmtpTestResult = {
   ok: boolean;
-  host: string;
-  port: number;
-  secure: boolean;
-  user: string;
+  provider: "brevo-api";
+  toEmail: string;
+  fromEmail: string;
 };
 
 export async function testSmtpConnection(): Promise<SmtpTestResult> {
-  const smtpConfig = getSmtpConfig();
-  if (!smtpConfig) {
-    throw new Error("SMTP configuration is missing or invalid");
-  }
-
-  const transporter = getTransporter(smtpConfig);
-
-  await transporter.verify();
+  const config = getBrevoConfig();
+  await axios.get(`${BREVO_API_BASE_URL}/account`, {
+    headers: {
+      "api-key": config.apiKey,
+    },
+    timeout: EMAIL_TIMEOUT_MS,
+  });
 
   return {
     ok: true,
-    host: smtpConfig.host,
-    port: smtpConfig.port,
-    secure: smtpConfig.port === 465,
-    user: smtpConfig.user,
+    provider: "brevo-api",
+    toEmail: config.toEmail,
+    fromEmail: config.fromEmail,
   };
 }
 
 export async function sendContactNotificationEmail(
   payload: ContactEmailPayload,
 ): Promise<ContactEmailSendResult> {
-  const smtpConfig = getSmtpConfig();
-  if (!smtpConfig) {
-    throw new Error("SMTP configuration is missing or invalid");
-  }
-
-  const transporter = getTransporter(smtpConfig);
+  const config = getBrevoConfig();
 
   const subjectValue = payload.subject?.trim() || "No subject provided";
   const submittedAtLocal = payload.submittedAt.toLocaleString();
@@ -162,33 +136,31 @@ export async function sendContactNotificationEmail(
     <p><strong>Submitted At:</strong> ${escapeHtml(submittedAtLocal)} (${escapeHtml(submittedAtIso)})</p>
   `;
 
-  const mailOptions = {
-    from: `"Portfolio Contact" <${smtpConfig.user}>`,
-    to: getContactReceiverEmail(),
-    replyTo: payload.email,
-    subject: "New Contact Form Query",
-    text: textBody,
-    html: htmlBody,
+  const response = await axios.post(
+    `${BREVO_API_BASE_URL}/smtp/email`,
+    {
+      sender: {
+        name: config.fromName,
+        email: config.fromEmail,
+      },
+      to: [{ email: getContactReceiverEmail() }],
+      replyTo: { email: payload.email },
+      subject: "New Contact Form Query",
+      textContent: textBody,
+      htmlContent: htmlBody,
+    },
+    {
+      headers: {
+        "api-key": config.apiKey,
+        "Content-Type": "application/json",
+      },
+      timeout: EMAIL_TIMEOUT_MS,
+    },
+  );
+
+  return {
+    messageId: String(response.data?.messageId ?? ""),
+    accepted: [getContactReceiverEmail()],
+    rejected: [],
   };
-
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= SMTP_RETRY_ATTEMPTS; attempt += 1) {
-    try {
-      const result = await transporter.sendMail(mailOptions);
-      return {
-        messageId: result.messageId,
-        accepted: (result.accepted ?? []).map(String),
-        rejected: (result.rejected ?? []).map(String),
-      };
-    } catch (error) {
-      lastError = error;
-      if (!isRetryableSmtpError(error) || attempt === SMTP_RETRY_ATTEMPTS) {
-        break;
-      }
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Failed to send contact notification email");
 }
