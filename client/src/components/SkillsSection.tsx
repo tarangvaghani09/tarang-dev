@@ -1,9 +1,35 @@
 import { motion } from "framer-motion";
 
-const skills = [
-  "React.js", "Node.js", "PostgreSQL", "REST API", 
-  "Admin Dashboard", "CRUD Applications", "TypeScript", 
-  "TailwindCSS", "Next.js", "System Architecture"
+const skillGroups = [
+  {
+    title: "Frontend",
+    items: ["React", "Next.js", "TypeScript", "TailwindCSS"],
+  },
+  {
+    title: "Backend",
+    items: ["Node.js", "Express.js", "REST APIs", "Authentication"],
+  },
+  {
+    title: "Database",
+    items: ["PostgreSQL", "MySQL", "Query Optimization"],
+  },
+  {
+    title: "Architecture",
+    items: ["System Design", "Scalable APIs", "Admin Dashboards"],
+  },
+  {
+    title: "Tools",
+    items: ["Git", "GitHub", "Docker", "Postman"],
+  },
+  {
+    title: "Dev Practices",
+    items: [
+      "Clean Code",
+      "API Security",
+      "Performance Optimization",
+      "Responsive Design",
+    ],
+  },
 ];
 
 export function SkillsSection() {
@@ -17,24 +43,27 @@ export function SkillsSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Technical Arsenal</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">Core Expertise</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Specialized in modern web technologies, focusing on creating robust, 
-            type-safe, and highly performant applications from front to back.
+            Structured across frontend, backend, database, architecture, and
+            engineering practices for production-ready applications.
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
-          {skills.map((skill, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+          {skillGroups.map((group, index) => (
             <motion.div
-              key={skill}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              key={group.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="px-6 py-3 rounded-full bg-secondary/50 border border-white/5 text-foreground font-medium hover:border-primary/50 hover:bg-primary/5 hover:-translate-y-1 transition-all duration-300 cursor-default"
+              transition={{ duration: 0.35, delay: index * 0.06 }}
+              className="rounded-2xl border border-white/10 bg-secondary/25 backdrop-blur-sm p-5"
             >
-              {skill}
+              <h3 className="text-base md:text-lg font-semibold mb-2">{group.title}</h3>
+              <p className="text-muted-foreground leading-7">
+                {group.items.join(" • ")}
+              </p>
             </motion.div>
           ))}
         </div>
