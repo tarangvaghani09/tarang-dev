@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import Home from "@/pages/Home";
 import Admin from "@/pages/Admin";
 import AdminMessages from "@/pages/AdminMessages";
+import AdminDb from "@/pages/AdminDb";
 import ProjectCaseStudy from "@/pages/ProjectCaseStudy";
 import NotFound from "@/pages/not-found";
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/projects/:slug" component={ProjectCaseStudy}/>
       <Route path="/admin" component={Admin}/>
       <Route path="/admin/messages" component={AdminMessages}/>
+      <Route path="/admin/db" component={AdminDb}/>
       <Route component={NotFound} />
     </Switch>
   );

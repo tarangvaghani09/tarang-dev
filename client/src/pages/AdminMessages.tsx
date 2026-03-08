@@ -102,9 +102,14 @@ export default function AdminMessages() {
               Contact messages with delivery status and date filters.
             </p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setLocation("/admin/db")}>
+              DB View
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

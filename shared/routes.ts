@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertMessageSchema, messages } from './schema';
+import { insertMessageSchema, messages, users } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -63,6 +63,20 @@ export const api = {
                 sent: 0,
                 notSent: 0,
               }),
+          }),
+          401: errorSchemas.unauthorized,
+          403: errorSchemas.unauthorized,
+        },
+      },
+    },
+    db: {
+      list: {
+        method: "GET" as const,
+        path: "/api/admin/db" as const,
+        responses: {
+          200: z.object({
+            messages: z.array(z.custom<typeof messages.$inferSelect>()),
+            users: z.array(z.custom<typeof users.$inferSelect>()),
           }),
           401: errorSchemas.unauthorized,
           403: errorSchemas.unauthorized,

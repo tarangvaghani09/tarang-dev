@@ -43,6 +43,44 @@ export type ContactEmailSendResult = {
   rejected: string[];
 };
 
+export type SmtpTestResult = {
+  ok: boolean;
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+};
+
+export async function testSmtpConnection(): Promise<SmtpTestResult> {
+  const smtpConfig = getSmtpConfig();
+  if (!smtpConfig) {
+    throw new Error("SMTP configuration is missing or invalid");
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtpConfig.host,
+    port: smtpConfig.port,
+    secure: smtpConfig.port === 465,
+    auth: {
+      user: smtpConfig.user,
+      pass: smtpConfig.pass,
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
+  });
+
+  await transporter.verify();
+
+  return {
+    ok: true,
+    host: smtpConfig.host,
+    port: smtpConfig.port,
+    secure: smtpConfig.port === 465,
+    user: smtpConfig.user,
+  };
+}
+
 export async function sendContactNotificationEmail(
   payload: ContactEmailPayload,
 ): Promise<ContactEmailSendResult> {

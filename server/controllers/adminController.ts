@@ -1,8 +1,12 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { asc, desc } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "../db";
 import { storage } from "../storage";
 import { comparePassword } from "../schema/User";
+import { testSmtpConnection } from "../email";
+import { messages, users } from "@shared/schema";
 
 const querySchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -11,6 +15,10 @@ const querySchema = z.object({
   sort: z.enum(["newest", "oldest"]).default("newest"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
+});
+
+const dbQuerySchema = z.object({
+  sort: z.enum(["newest", "oldest"]).default("newest"),
 });
 
 const loginSchema = z.object({
@@ -93,5 +101,50 @@ export async function adminLogin(req: Request, res: Response) {
     }
 
     return res.status(500).json({ message: "Failed to login as admin" });
+  }
+}
+
+export async function smtpTest(req: Request, res: Response) {
+  try {
+    const result = await testSmtpConnection();
+    console.log("SMTP test success", result);
+    return res.json(result);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown SMTP connection error";
+    console.error("SMTP test failed:", error);
+    return res.status(500).json({ message });
+  }
+}
+
+export async function getAdminDbSnapshot(req: Request, res: Response) {
+  try {
+    const parsed = dbQuerySchema.parse(req.query);
+    const messageOrder =
+      parsed.sort === "oldest"
+        ? [asc(messages.createdAt), asc(messages.id)]
+        : [desc(messages.createdAt), desc(messages.id)];
+    const userOrder =
+      parsed.sort === "oldest"
+        ? [asc(users.createdAt), asc(users.id)]
+        : [desc(users.createdAt), desc(users.id)];
+
+    const [messageRows, userRows] = await Promise.all([
+      db.select().from(messages).orderBy(...messageOrder),
+      db.select().from(users).orderBy(...userOrder),
+    ]);
+
+    return res.json({
+      messages: messageRows,
+      users: userRows,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        message: error.errors[0]?.message ?? "Invalid query parameters",
+      });
+    }
+
+    return res.status(500).json({ message: "Failed to fetch database snapshot" });
   }
 }
