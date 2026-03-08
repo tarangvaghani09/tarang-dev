@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertMessageSchema } from "@shared/schema";
 import { useCreateMessage } from "@/hooks/use-messages";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Mail, MapPin } from "lucide-react";
+import { Send, Mail, MapPin, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 export function ContactSection() {
@@ -21,8 +21,16 @@ export function ContactSection() {
   });
 
   const onSubmit = (data: z.infer<typeof insertMessageSchema>) => {
+    const slowRequestToastTimer = window.setTimeout(() => {
+      toast({
+        title: "Waking up server... grab a cup of coffee",
+        description: "First request on free hosting can take a little time.",
+      });
+    }, 3000);
+
     createMessage.mutate(data, {
       onSuccess: () => {
+        window.clearTimeout(slowRequestToastTimer);
         toast({
           title: "Message sent!",
           description: "Your message has been received. An email notification has also been sent to tarangvaghani@gmail.com.",
@@ -30,6 +38,7 @@ export function ContactSection() {
         form.reset();
       },
       onError: (error) => {
+        window.clearTimeout(slowRequestToastTimer);
         toast({
           variant: "destructive",
           title: "Error",
@@ -129,7 +138,11 @@ export function ContactSection() {
                 className="w-full px-6 py-4 rounded-xl font-bold bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {createMessage.isPending ? "Sending..." : "Send Message"}
-                <Send className="w-4 h-4" />
+                {createMessage.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </form>
           </motion.div>
