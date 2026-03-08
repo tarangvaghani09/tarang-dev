@@ -2,12 +2,14 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
+import { getApiBaseUrl } from "@/lib/api-base";
 
 export function useCreateMessage() {
   return useMutation({
     mutationFn: async (data: z.infer<typeof insertMessageSchema>) => {
       const validated = insertMessageSchema.parse(data);
-      const res = await fetch(api.messages.create.path, {
+      const apiBase = getApiBaseUrl();
+      const res = await fetch(`${apiBase}${api.messages.create.path}`, {
         method: api.messages.create.method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(validated),

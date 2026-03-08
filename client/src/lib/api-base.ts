@@ -1,7 +1,12 @@
 export function getApiBaseUrl(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (configured && configured.trim().length > 0) {
-    return configured.trim();
+  const configuredBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (configuredBase && configuredBase.trim().length > 0) {
+    return configuredBase.trim();
+  }
+
+  const configuredLegacy = import.meta.env.VITE_API_URL as string | undefined;
+  if (configuredLegacy && configuredLegacy.trim().length > 0) {
+    return configuredLegacy.trim();
   }
 
   if (typeof window !== "undefined") {

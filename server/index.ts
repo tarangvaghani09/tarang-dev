@@ -22,6 +22,57 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+function getAllowedOrigins(): string[] {
+  const values = [
+    process.env.FRONTEND_URL,
+    process.env.FRONTEND_ORIGIN,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim());
+
+  const csv = process.env.FRONTEND_ORIGINS;
+  if (csv) {
+    values.push(
+      ...csv
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean),
+    );
+  }
+
+  return Array.from(new Set(values));
+}
+
+const allowedOrigins = getAllowedOrigins();
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin) {
+    return next();
+  }
+
+  const isDev = process.env.NODE_ENV !== "production";
+  const isAllowed = isDev || allowedOrigins.includes(origin);
+
+  if (isAllowed) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Access-Token",
+    );
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -79,7 +130,9 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
+    if (process.env.SERVE_STATIC === "true") {
+      serveStatic(app);
+    }
   } else {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
