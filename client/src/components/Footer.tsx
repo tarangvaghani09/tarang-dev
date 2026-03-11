@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="py-12 border-t border-white/5 bg-background">
       <div className="container max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2">
-          <span className="font-display font-bold text-xl">DEV.</span>
+          <span className="font-display font-bold text-xl">TARANG.</span>
           <span className="text-muted-foreground text-sm">© {new Date().getFullYear()} All rights reserved.</span>
         </div>
         
