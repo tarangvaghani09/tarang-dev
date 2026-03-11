@@ -83,8 +83,8 @@ export function Navbar() {
               <Menu className="w-5 h-5 text-white" />
             </button>
           </SheetTrigger>
-          <SheetContent side="left">
-            <nav className="mt-8 flex flex-col gap-3">
+          <SheetContent side="left" className="border-r-0 shadow-2xl">
+            <nav className="mt-10 flex flex-col gap-4">
               {["Expertise", "Projects", "Contact"].map((item) => (
                 <SheetClose asChild key={item}>
                   <motion.button
@@ -92,7 +92,7 @@ export function Navbar() {
                     whileHover={{ y: -1, scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="min-h-12 w-full text-left px-5 py-3.5 rounded-lg text-base font-semibold bg-transparent text-muted-foreground hover:bg-primary/90 hover:text-primary-foreground active:scale-95 transition-all duration-200"
+                    className="min-h-14 w-full text-left px-6 py-4 rounded-2xl text-xl font-semibold bg-white/70 text-[#1b1b1b] shadow-sm shadow-black/10 hover:bg-[#1b1b1b] hover:text-white active:scale-[0.98] transition-all duration-200 dark:bg-white/10 dark:text-white/90 dark:hover:bg-white dark:hover:text-[#111]"
                   >
                     {item}
                   </motion.button>
@@ -101,7 +101,14 @@ export function Navbar() {
             </nav>
           </SheetContent>
         </Sheet>
-        <span className="font-display font-bold text-xl tracking-wide">Tarang</span>
+        <button
+          type="button"
+          onClick={() => scrollTo("hero")}
+          className="font-display font-bold text-xl tracking-wide hover:text-foreground/90 transition-colors"
+          aria-label="Scroll to top"
+        >
+          Tarang
+        </button>
       </div>
 
       <div className="hidden md:flex items-center gap-8">
