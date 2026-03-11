@@ -72,9 +72,19 @@
     --ring: 217.2 91.2% 59.8%;
   }
 
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary transition-colors duration-300;
     font-family: var(--font-sans);
+  }
+
+  #root {
+    width: 100%;
     overflow-x: hidden;
   }
 
