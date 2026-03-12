@@ -133,9 +133,9 @@ export function Navbar() {
         >
           <motion.span
             className="block"
-            whileHover={{ rotate: 180 }}
-            whileTap={{ rotate: 180 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            whileHover={{ rotate: 120 }}
+            whileTap={{ rotate: 120 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </motion.span>
