@@ -92,7 +92,7 @@ export function Navbar() {
                     whileHover={{ y: -1, scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="min-h-14 w-full text-left px-6 py-4 rounded-2xl text-xl font-semibold bg-white/70 text-[#1b1b1b] shadow-sm shadow-black/10 hover:bg-[#1b1b1b] hover:text-white active:scale-[0.98] transition-all duration-200 dark:bg-white/10 dark:text-white/90 dark:hover:bg-white dark:hover:text-[#111]"
+                    className="min-h-14 w-full text-left px-6 py-4 rounded-2xl text-xl font-semibold bg-white/70 text-[#1b1b1b] shadow-sm shadow-black/10 hover:bg-[#1b1b1b] hover:text-white active:scale-[0.98] transition-all duration-200 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white dark:hover:text-[#111]"
                   >
                     {item}
                   </motion.button>
