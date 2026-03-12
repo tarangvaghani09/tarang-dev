@@ -124,13 +124,21 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button
+        <motion.button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
           className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
           aria-label="Toggle theme"
         >
-          {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+          <motion.span
+            className="block"
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </motion.span>
+        </motion.button>
         
         <button 
           onClick={() => scrollTo('contact')}
