@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Server, Database } from "lucide-react";
+import { ArrowRight, Terminal, Server, Database, Network, Leaf } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -90,8 +90,16 @@ export function HeroSection() {
               <span className="font-medium">Node.js APIs</span>
             </div>
             <div className="flex items-center gap-2">
+              <Network className="w-5 h-5 text-primary" />
+              <span className="font-medium">REST APIs</span>
+            </div>
+            <div className="flex items-center gap-2">
               <Database className="w-5 h-5 text-primary" />
               <span className="font-medium">PostgreSQL</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Leaf className="w-5 h-5 text-accent" />
+              <span className="font-medium">MongoDB</span>
             </div>
           </motion.div>
         </div>
