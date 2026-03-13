@@ -46,8 +46,9 @@ export function TestimonialsSection() {
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              whileHover={{ y: -4 }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+              className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/10"
             >
               <div className="text-yellow-400 tracking-wide text-base mb-4">★★★★★</div>
               <p className="text-foreground leading-7 mb-6">"{item.text}"</p>

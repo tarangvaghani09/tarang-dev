@@ -60,10 +60,24 @@ export function SkillsSection() {
               transition={{ duration: 0.35, delay: index * 0.06 }}
               className="rounded-2xl border border-white/10 bg-secondary/25 backdrop-blur-sm p-5"
             >
-              <h3 className="text-base md:text-lg font-semibold mb-2">{group.title}</h3>
-              <p className="text-muted-foreground leading-7">
-                {group.items.join(" • ")}
-              </p>
+              <h3 className="text-base md:text-lg font-semibold mb-3">{group.title}</h3>
+              <div className="flex flex-wrap gap-2">
+                {group.items.map((item, itemIndex) => (
+                  <motion.span
+                    key={item}
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{
+                      duration: 0.25,
+                      delay: index * 0.05 + itemIndex * 0.04,
+                    }}
+                    className="text-xs md:text-sm px-2.5 py-1 rounded-full bg-white/5 text-muted-foreground border border-white/10"
+                  >
+                    {item}
+                  </motion.span>
+                ))}
+              </div>
             </motion.div>
           ))}
         </div>
@@ -71,3 +85,4 @@ export function SkillsSection() {
     </section>
   );
 }
+

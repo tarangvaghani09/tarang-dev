@@ -38,19 +38,18 @@ export function Navbar() {
       if (!isMobile) {
         setIsNavbarVisible(true);
         lastScrollY = window.scrollY;
-        return;
-      }
-
-      const currentScrollY = window.scrollY;
-      if (currentScrollY <= 8) {
-        setIsNavbarVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        setIsNavbarVisible(false);
       } else {
-        setIsNavbarVisible(true);
-      }
+        const currentScrollY = window.scrollY;
+        if (currentScrollY <= 8) {
+          setIsNavbarVisible(true);
+        } else if (currentScrollY > lastScrollY) {
+          setIsNavbarVisible(false);
+        } else {
+          setIsNavbarVisible(true);
+        }
 
-      lastScrollY = currentScrollY;
+        lastScrollY = currentScrollY;
+      }
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
