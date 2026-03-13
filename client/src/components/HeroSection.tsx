@@ -79,7 +79,7 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.8 }}
-            className="mt-20 pt-8 border-t border-white/10 flex flex-wrap gap-8 text-muted-foreground"
+            className="mt-10 pt-8 border-t border-white/10 flex flex-wrap gap-8 text-muted-foreground"
           >
             <div className="flex items-center gap-2">
               <Terminal className="w-5 h-5 text-primary" />
