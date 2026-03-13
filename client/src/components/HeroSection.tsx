@@ -206,33 +206,33 @@ function DataStreams() {
 }
  
 /* ─── Glowing corner bracket decorations ─── */
-function CornerBrackets() {
-  const bracketStyle = (pos: string): React.CSSProperties => ({
-    position: "absolute",
-    width: 28,
-    height: 28,
-    ...pos.includes("top") ? { top: 20 } : { bottom: 20 },
-    ...pos.includes("left") ? { left: 20 } : { right: 20 },
-    borderTop: pos.includes("top") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
-    borderBottom: pos.includes("bottom") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
-    borderLeft: pos.includes("left") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
-    borderRight: pos.includes("right") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
-  });
+// function CornerBrackets() {
+//   const bracketStyle = (pos: string): React.CSSProperties => ({
+//     position: "absolute",
+//     width: 28,
+//     height: 28,
+//     ...pos.includes("top") ? { top: 20 } : { bottom: 20 },
+//     ...pos.includes("left") ? { left: 20 } : { right: 20 },
+//     borderTop: pos.includes("top") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
+//     borderBottom: pos.includes("bottom") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
+//     borderLeft: pos.includes("left") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
+//     borderRight: pos.includes("right") ? "1.5px solid hsl(var(--primary) / 0.5)" : undefined,
+//   });
  
-  return (
-    <motion.div
-      className="absolute inset-0"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 2, delay: 1 }}
-    >
-      <div style={bracketStyle("top-left")} />
-      <div style={bracketStyle("top-right")} />
-      <div style={bracketStyle("bottom-left")} />
-      <div style={bracketStyle("bottom-right")} />
-    </motion.div>
-  );
-}
+//   return (
+//     <motion.div
+//       className="absolute inset-0"
+//       initial={{ opacity: 0 }}
+//       animate={{ opacity: 1 }}
+//       transition={{ duration: 2, delay: 1 }}
+//     >
+//       <div style={bracketStyle("top-left")} />
+//       <div style={bracketStyle("top-right")} />
+//       <div style={bracketStyle("bottom-left")} />
+//       <div style={bracketStyle("bottom-right")} />
+//     </motion.div>
+//   );
+// }
  
 /* ─── Slow breathing spotlight ─── */
 function Spotlight() {
@@ -329,7 +329,7 @@ export function HeroSection() {
         <FloatingTags />
  
         {/* Layer 4 — corner bracket UI chrome */}
-        <CornerBrackets />
+        {/* <CornerBrackets /> */}
  
         {/* Layer 6 — depth gradient: left darkens for readability */}
         <div
